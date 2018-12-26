@@ -11,10 +11,16 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatIconModule} from '@angular/material/icon';
 import {MatListModule} from '@angular/material/list';
 import {MatDividerModule} from '@angular/material/divider';
+import { AttendanceComponent } from './attendance/attendance.component';
+import { SupportComponent } from './support/support.component';
+import { ReportComponent } from './report/report.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    AttendanceComponent,
+    SupportComponent,
+    ReportComponent
   ],
   imports: [
     BrowserModule,
