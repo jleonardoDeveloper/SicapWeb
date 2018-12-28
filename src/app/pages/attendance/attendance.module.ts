@@ -1,6 +1,21 @@
 import { NgModule } from '@angular/core';
 import { AttendanceComponent } from './attendance.component';
-import { MatCardModule, MatButtonModule, MatGridListModule, MatFormFieldModule, MatIconModule, MatInputModule } from '@angular/material';
+import {  MatCardModule, 
+          MatButtonModule, 
+          MatGridListModule, 
+          MatFormFieldModule, 
+          MatIconModule, 
+          MatInputModule, 
+          MatDatepickerModule, 
+          MatNativeDateModule, 
+          MatTableModule, 
+          MatPaginatorModule, 
+          MatSortModule, 
+          MatProgressSpinnerModule 
+        } 
+        from '@angular/material';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -12,7 +27,15 @@ import { MatCardModule, MatButtonModule, MatGridListModule, MatFormFieldModule, 
     MatGridListModule,
     MatFormFieldModule,
     MatIconModule,
-    MatInputModule
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    FormsModule,
+    HttpClientModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatProgressSpinnerModule
   ]
 })
 export class AttendanceModule { }
