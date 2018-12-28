@@ -11,23 +11,29 @@ import {  MatCardModule,
           MatTableModule, 
           MatPaginatorModule, 
           MatSortModule, 
-          MatProgressSpinnerModule 
+          MatProgressSpinnerModule, 
+          MatSelectModule,
+          MatOptionModule
         } 
         from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
     AttendanceComponent
   ],
   imports: [
+    CommonModule,
     MatCardModule,
     MatButtonModule,
     MatGridListModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
     MatDatepickerModule,
     MatNativeDateModule,
     FormsModule,

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import {DataSource} from '@angular/cdk/collections';
-import {BehaviorSubject, Observable} from 'rxjs';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator, MatTableDataSource, MatSort } from '@angular/material';
+import { AttendanceService } from 'src/app/data/attendance.service';
 
 @Component({
   selector: 'app-attendance',
@@ -10,7 +10,6 @@ import {BehaviorSubject, Observable} from 'rxjs';
 
 export class AttendanceComponent implements OnInit {
   breakpoint: number
-
   query: Query = {
     vNumeroDocumento : "",
     dtFechaInicio : new Date(),
@@ -18,34 +17,23 @@ export class AttendanceComponent implements OnInit {
     vCodigoArea : ""
   }
 
-  ngOnInit(): void {
-    this.breakpoint =  calculateElementsInline(window.innerWidth);
-  }
+  areas = AREA_DATA
+  displayedColumns: string[] = ['vNombreArea', 'vNombreTrabajador', 'vNumeroDocumento', 'dtFechaAsistencia', 'dtHoraIngreso', 'dtHoraSalidaAlmuerzo', 'dtHoraRetornoAlmuerzo', 'dtHoraSalida']
+  attendanceDataSource = new MatTableDataSource<Attendance>(ATTENDANCE_DATA);
 
-  onResize(event){
-    this.breakpoint =  calculateElementsInline(event.target.innerWidth);
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
+
+  constructor(private attendanceService:AttendanceService){}
+
+  ngOnInit(): void {
+    this.attendanceDataSource.paginator = this.paginator;
   }
 
   findByQuery(){
     console.log(this.query)
   }
 
-}
-
-function calculateElementsInline(innerWidth:number) {
-    if(innerWidth < 360) return 1
-    else if(innerWidth >= 360 && innerWidth <400) return 1
-    else if(innerWidth >= 400 && innerWidth < 480) return 1
-    else if(innerWidth >= 480 && innerWidth < 600)  return 2
-    else if(innerWidth >= 600 && innerWidth < 720) return 2
-    else if(innerWidth >= 720 && innerWidth < 840) return 2
-    else if(innerWidth >= 840 && innerWidth < 960)  return 3
-    else if(innerWidth >= 960 && innerWidth < 1024) return 3
-    else if(innerWidth >= 1024 && innerWidth < 1280) return 3
-    else if(innerWidth >= 1280 && innerWidth < 1440)  return 4
-    else if(innerWidth >= 1440 && innerWidth < 1600)  return 4
-    else if(innerWidth >= 1600 && innerWidth < 1920)  return 4
-    else return 6
 }
 
 export interface Query{
@@ -66,33 +54,41 @@ export interface Attendance{
   dtHoraSalida:string
 }
 
-export class LessonsDataSource implements DataSource<Attendance> {
+export interface Area{
+  vCodigoArea: string,
+  vNombreArea: string,
+  vLatitud: string,
+  vLongitud: string
+}
 
-  private lessonsSubject = new BehaviorSubject<Attendance[]>([]);
-  private loadingSubject = new BehaviorSubject<boolean>(false);
+const ATTENDANCE_DATA: Attendance[] = [
+  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
+  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' }
+];
 
-  public loading$ = this.loadingSubject.asObservable();
-
-  constructor(private coursesService: CoursesService) {}
-
-  connect(collectionViewer: CollectionViewer): Observable<Lesson[]> {
-      return this.lessonsSubject.asObservable();
-  }
-
-  disconnect(collectionViewer: CollectionViewer): void {
-      this.lessonsSubject.complete();
-      this.loadingSubject.complete();
-  }
-
-  loadLessons(courseId: number, filter = '', sortDirection = 'asc', pageIndex = 0, pageSize = 3) {
-
-      this.loadingSubject.next(true);
-
-      this.coursesService.findLessons(courseId, filter, sortDirection,
-          pageIndex, pageSize).pipe(
-          catchError(() => of([])),
-          finalize(() => this.loadingSubject.next(false))
-      )
-      .subscribe(lessons => this.lessonsSubject.next(lessons));
-  }
-}    
+const AREA_DATA :Area[] = [
+  { vCodigoArea: '040201', vNombreArea: 'DZ Ancash', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
+  { vCodigoArea: '04020101', vNombreArea: 'AZ Recuay', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
+  { vCodigoArea: '04020102', vNombreArea: 'AZ Carhuaz', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
+  { vCodigoArea: '04020103', vNombreArea: 'AZ Bolognesi', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
+  { vCodigoArea: '040202', vNombreArea: 'DZ Lima', vLatitud: '-12.675436721', vLongitud:'-75.8883457394' }
+] 
