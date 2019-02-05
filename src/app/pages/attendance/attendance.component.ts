@@ -1,94 +1,157 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator, MatTableDataSource, MatSort } from '@angular/material';
-import { AttendanceService } from 'src/app/data/attendance.service';
+import { Component, OnInit, ViewChild, AfterViewInit, Inject } from '@angular/core';
+import { MatPaginator, MatSort, MatAutocompleteSelectedEvent, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { AttendanceService } from 'src/app/services/attendance.service';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
+import { AttendanceDataSource } from 'src/app/services/attendance.datasource';
+import { AttendanceDetailDataSource } from 'src/app/services/attendance-detail.datasource';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-attendance',
   templateUrl: './attendance.component.html',
-  styleUrls: ['./attendance.component.sass']
+  styleUrls: ['./attendance.component.sass'],
+  providers: [DatePipe]
 })
 
-export class AttendanceComponent implements OnInit {
-  breakpoint: number
-  query: Query = {
-    vNumeroDocumento : "",
-    dtFechaInicio : new Date(),
-    dtFechaFin : new Date(),
-    vCodigoArea : ""
-  }
-
-  areas = AREA_DATA
-  displayedColumns: string[] = ['vNombreArea', 'vNombreTrabajador', 'vNumeroDocumento', 'dtFechaAsistencia', 'dtHoraIngreso', 'dtHoraSalidaAlmuerzo', 'dtHoraRetornoAlmuerzo', 'dtHoraSalida']
-  attendanceDataSource = new MatTableDataSource<Attendance>(ATTENDANCE_DATA);
-
+export class AttendanceComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
+  //values
+  areaInputFormControl : FormControl = new FormControl();
+  areaFilteredOptions:Observable<any[]>
+  areas : any[]
+  attendanceDataSource : AttendanceDataSource;
+  filterOptions = {
+    cNumeroDocumento : "",
+    dtFechaInicio : "",
+    dtFechaFin : "",
+    vCodigoArea : ""
+  }
+  displayedColumns = ['vNombreArea', 'vNombreTrabajador', 'cNumeroDocumento', 'dtFechaMarcacion', 'tHoraIngreso', 'tHoraSalidaAlmuerzo', 'tHoraRetornoAlmuerzo', 'tHoraSalida'];
 
-  constructor(private attendanceService:AttendanceService){}
+  constructor(private attendanceService:AttendanceService, private datepipe: DatePipe, private attendanceDetailDialog:MatDialog){}
 
   ngOnInit(): void {
-    this.attendanceDataSource.paginator = this.paginator;
+    this.attendanceDataSource = new AttendanceDataSource(this.attendanceService);
+    this.attendanceService.getAreas({})
+      .subscribe(
+        (response) => 
+          {
+            this.areas = response
+            this.areaFilteredOptions = this.areaInputFormControl.valueChanges
+            .pipe(
+              startWith<string | any>(''),
+              map(value => typeof value === 'string' ? value : value.name),
+              map(name => name ? this._filter(name) : this.areas.slice())
+            );
+          },
+        (err) => console.error(err),
+        () => {
+          this.attendanceDataSource.loadAttendances({
+            iPageSize : this.paginator.pageSize,
+            iPageNumber : (this.paginator.pageIndex + 1),
+            vSortColumn : this.sort.active,
+            vSortOrder : this.sort.direction,
+            //temp values for dev
+            cNumeroDocumento:'33254002',
+            dtFechaInicio:'1/11/2018', 
+            dtFechaFin:'30/12/2018'
+          });
+        }
+      );
+  }
+  ngAfterViewInit(): void {
+    this.sort.sortChange.subscribe(
+      () => {
+        this.paginator.pageIndex = 0;
+        this.loadAttendancesPage();
+      }
+    );
+  }
+  //Helpers
+  _showAreaInForm(area?: any): string | undefined {
+    return area ? area.vNombreArea : undefined;
+  }
+  _filter(areaName : string): any[]{
+    const filterValue = areaName.toLowerCase();
+    return this.areas.filter(area => area.vNombreArea.toLowerCase().indexOf(filterValue) === 0);
+  }
+  //Events
+  onPaginatorChange(){
+    this.loadAttendancesPage();
+  }
+  onRowClicked(row:any) {
+    this.attendanceDetailDialog.open(AttendanceDetailDialogComponent, { 
+      width:'80%', 
+      data: row 
+    });
+  }
+  onClickSearchButton(){
+    this.loadAttendancesPage();
+  }
+  onInitialDateChange(event: MatDatepickerInputEvent<Date>){
+    this.filterOptions.dtFechaInicio = this.datepipe.transform(event.value,'dd/MM/yyyy');
+  }
+  onFinalDateChange(event: MatDatepickerInputEvent<Date>){
+    this.filterOptions.dtFechaFin =  this.datepipe.transform(event.value,'dd/MM/yyyy');
+  }
+  onAreaSelectedChange(event: MatAutocompleteSelectedEvent){
+    this.filterOptions.vCodigoArea = event.option.value.vCodigoArea;
+  }
+  //Methods
+  loadAttendancesPage() {
+    this.attendanceDataSource.loadAttendances({
+      iPageSize : this.paginator.pageSize,
+      iPageNumber : (this.paginator.pageIndex + 1),
+      vSortColumn : this.sort.active,
+      vSortOrder : this.sort.direction,
+      cNumeroDocumento:this.filterOptions.cNumeroDocumento,
+      dtFechaInicio:this.filterOptions.dtFechaInicio,
+      dtFechaFin:this.filterOptions.dtFechaFin
+    });
+  }
+}
+
+@Component({
+  selector: 'attendance-detail-dialog',
+  templateUrl: './attendance-detail-dialog.component.html',
+  styleUrls: ['./attendance-detail-dialog.component.sass'],
+})
+export class AttendanceDetailDialogComponent implements OnInit {
+  globals = {
+    mapElements : {
+      areaPosition : {
+        latitude: 0.0,
+        longitude : 0.0
+      },
+      attendancesPositionMarkers:[]
+    },
+    currentSelectedRow : null
   }
 
-  findByQuery(){
-    console.log(this.query)
+  attendanceDetailDataSource : AttendanceDetailDataSource;
+  displayedColumns = ['dtFechaMarcacion', 'vTipoMarcacion', 'tHora', 'vCodigoPapeleta'];
+
+  constructor( private attendanceService:AttendanceService ,private attendanceDetailDialogRef: MatDialogRef<AttendanceDetailDialogComponent>, @Inject(MAT_DIALOG_DATA) public attendance: any) {}
+
+  ngOnInit(): void {
+    this.globals.mapElements.areaPosition.latitude = +this.attendance.vLatitud;
+    this.globals.mapElements.areaPosition.longitude = +this.attendance.vLongitud;
+    this.attendanceDetailDataSource = new AttendanceDetailDataSource(this.attendanceService);
+    this.attendanceDetailDataSource.loadAttendanceDetail({
+      dtFechaMarcacion : this.attendance.dtFechaMarcacion,
+      cNumeroDocumento : this.attendance.cNumeroDocumento
+    });
+  }
+
+  onButtonCloseClick() : void {
+    this.attendanceDetailDialogRef.close();
+  }
+  onAttendanceDetailRowClicked( row : any ) {
+    this.globals.currentSelectedRow = row;
   }
 
 }
-
-export interface Query{
-  vNumeroDocumento: string,
-  dtFechaInicio : Date,
-  dtFechaFin : Date,
-  vCodigoArea : string
-}
-
-export interface Attendance{
-  vNombreArea:string,
-  vNombreTrabajador: string,
-  vNumeroDocumento: string,
-  dtFechaAsistencia:string,
-  dtHoraIngreso:string,
-  dtHoraSalidaAlmuerzo:string,
-  dtHoraRetornoAlmuerzo:string,
-  dtHoraSalida:string
-}
-
-export interface Area{
-  vCodigoArea: string,
-  vNombreArea: string,
-  vLatitud: string,
-  vLongitud: string
-}
-
-const ATTENDANCE_DATA: Attendance[] = [
-  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Lima', vNombreTrabajador: 'Julio Leonardo', vNumeroDocumento:'71528637', dtFechaAsistencia: '01/01/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Cajamarca', vNombreTrabajador: 'Cesar Paredes', vNumeroDocumento:'71537840', dtFechaAsistencia: '27/06/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ La Libertad', vNombreTrabajador: 'Carlos Corta', vNumeroDocumento:'48285631', dtFechaAsistencia: '01/11/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' },
-  { vNombreArea: 'DZ Amazonas', vNombreTrabajador: 'Jean Valjean', vNumeroDocumento:'71522890', dtFechaAsistencia: '01/07/2018', dtHoraIngreso : '07:45' ,dtHoraSalidaAlmuerzo: '13:05', dtHoraRetornoAlmuerzo: '13:55',dtHoraSalida : '17:53' }
-];
-
-const AREA_DATA :Area[] = [
-  { vCodigoArea: '040201', vNombreArea: 'DZ Ancash', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
-  { vCodigoArea: '04020101', vNombreArea: 'AZ Recuay', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
-  { vCodigoArea: '04020102', vNombreArea: 'AZ Carhuaz', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
-  { vCodigoArea: '04020103', vNombreArea: 'AZ Bolognesi', vLatitud: '-12.675436721', vLongitud:'-72.8883457394' },
-  { vCodigoArea: '040202', vNombreArea: 'DZ Lima', vLatitud: '-12.675436721', vLongitud:'-75.8883457394' }
-] 

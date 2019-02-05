@@ -9,16 +9,22 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
-    <mat-toolbar color="primary">
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
-        *ngIf="isHandset$ | async">
-        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      </button>
-      <span class="toolbar-title">SICAP</span>
+    <mat-toolbar color="primary" class="mat-elevation-z6">
+      <mat-toolbar-row>
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          *ngIf="isHandset$ | async">
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+        <span>SICAP WEB</span>
+        <span class="flex-spacer"></span>
+        <a (click)="onButtonExitClick()">
+          <mat-icon class="toolbar-icon">exit_to_app</mat-icon>
+        </a>
+      </mat-toolbar-row>
     </mat-toolbar>
     <div class="sidenav-content">
       <router-outlet></router-outlet>

@@ -1,0 +1,53 @@
+<h1 mat-dialog-title>Detalle de Asistencia</h1>
+<div mat-dialog-content>
+  <h4>{{attendance.vNombreTrabajador}}</h4>
+  <div fxLayout="row wrap" fxLayout.lt-sm="column" fxLayoutGap="1%" fxLayoutAlign="flex-start">
+    <div fxFlex="0 1 calc(50% - 1%)" fxFlex.lt-md="0 1 calc(50% - 1%)" fxFlex.lt-sm="100%">
+      <div fxLayout="column wrap" fxLayout.lt-sm="column" fxLayoutGap="4%" fxLayoutAlign="flex-start">
+        <div class="table-container">
+            <mat-table [dataSource]="attendanceDetailDataSource">
+              <ng-container matColumnDef="dtFechaMarcacion">
+                  <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+                  <mat-cell *matCellDef="let attendanceDetail">{{attendanceDetail.dtFechaMarcacion}}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="vTipoMarcacion">
+                  <mat-header-cell *matHeaderCellDef>Tipo</mat-header-cell>
+                  <mat-cell *matCellDef="let attendanceDetail">{{attendanceDetail.vTipoMarcacion}}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="tHora">
+                  <mat-header-cell *matHeaderCellDef>Hora</mat-header-cell>
+                  <mat-cell *matCellDef="let attendanceDetail">{{attendanceDetail.tHora}}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="vCodigoPapeleta">
+                  <mat-header-cell *matHeaderCellDef>Código de Papeleta</mat-header-cell>
+                  <mat-cell *matCellDef="let attendanceDetail">{{attendanceDetail.vCodigoPapeleta}}</mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: displayedColumns" (click)="onAttendanceDetailRowClicked(row)"></mat-row>
+            </mat-table>
+        </div>
+        <div *ngIf="globals.currentSelectedRow && globals.currentSelectedRow.vObservacionPapeleta" fxLayout="column wrap" fxLayout.lt-sm="column" fxLayoutGap="4%" fxLayoutAlign="flex-start">
+          <mat-form-field>
+            <textarea matInput placeholder="Observacion de Papeleta" [disabled]="true" [(ngModel)]="globals.currentSelectedRow.vObservacionPapeleta"></textarea>
+          </mat-form-field>
+        </div>
+
+
+      </div>
+      
+    </div>
+    <div
+      fxFlex="0 1 calc(50% - 1%)"
+      fxFlex.lt-md="0 1 calc(50% - 1%)"
+      fxFlex.lt-sm="100%">
+      <agm-map [latitude]="globals.mapElements.areaPosition.latitude" [longitude]="globals.mapElements.areaPosition.longitude">
+        <agm-marker *ngFor="let marker of attendanceDetailDataSource.markers$ | async" 
+          [latitude]="marker.latitude" [longitude]="marker.longitude">
+        </agm-marker>
+      </agm-map>
+    </div>
+  </div>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button color="primary" (click)="onButtonCloseClick()" cdkFocusInitial>Cerrar</button>
+</div>

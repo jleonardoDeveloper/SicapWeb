@@ -5,9 +5,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule} from '@angular/material/sidenav';
 import { MatIconModule} from '@angular/material/icon';
 import { MatListModule} from '@angular/material/list';
-import { MatButtonModule } from '@angular/material';
+import { MatButtonModule, MatDialogModule } from '@angular/material';
 //Main Component
-import { PagesComponent } from './pages.component';
+import { PagesComponent,PagesExitDialogComponent } from './pages.component';
 //Modules
 import { AttendanceModule } from './attendance/attendance.module';
 import { SupportModule } from './support/support.module';
@@ -17,7 +17,12 @@ import { PagesRoutingModule } from './pages-routing.module';
 
 @NgModule({
   declarations: [
-    PagesComponent
+    PagesComponent,
+    PagesExitDialogComponent
+  ],
+  entryComponents : [
+    PagesComponent,
+    PagesExitDialogComponent
   ],
   imports: [
     //Routing Module
@@ -28,6 +33,7 @@ import { PagesRoutingModule } from './pages-routing.module';
     MatIconModule,
     MatListModule,
     MatButtonModule,
+    MatDialogModule,
     //Modules
     DashboardModule,
     AttendanceModule,

@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { AttendanceComponent } from './attendance.component';
+import { AttendanceComponent, AttendanceDetailDialogComponent } from './attendance.component';
 import {  MatCardModule, 
           MatButtonModule, 
           MatGridListModule, 
@@ -13,16 +13,25 @@ import {  MatCardModule,
           MatSortModule, 
           MatProgressSpinnerModule, 
           MatSelectModule,
-          MatOptionModule
+          MatOptionModule,
+          MatAutocompleteModule,
+          MatDialogModule
         } 
         from '@angular/material';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { AgmCoreModule } from '@agm/core';
 
 @NgModule({
+  entryComponents : [
+    AttendanceComponent,
+    AttendanceDetailDialogComponent
+  ],
   declarations: [
-    AttendanceComponent
+    AttendanceComponent,
+    AttendanceDetailDialogComponent
   ],
   imports: [
     CommonModule,
@@ -37,11 +46,18 @@ import { CommonModule } from '@angular/common';
     MatDatepickerModule,
     MatNativeDateModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatAutocompleteModule,
+    MatDialogModule,
+    FlexLayoutModule,
+    AgmCoreModule.forRoot({
+      apiKey: 'AIzaSyBNMcP7vQ11WbRoVMCsCwJgXXc9f2VvL_E'
+    })
   ]
 })
 export class AttendanceModule { }
