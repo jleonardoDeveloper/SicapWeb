@@ -25,12 +25,12 @@ export class AttendanceComponent implements OnInit, AfterViewInit {
   areas : any[]
   attendanceDataSource : AttendanceDataSource;
   filterOptions = {
-    cNumeroDocumento : "",
-    dtFechaInicio : "",
-    dtFechaFin : "",
-    vCodigoArea : ""
+    numeroDocumento : "",
+    fechaInicio : "",
+    fechaFin : "",
+    codigoArea : ""
   }
-  displayedColumns = ['vNombreArea', 'vNombreTrabajador', 'cNumeroDocumento', 'dtFechaMarcacion', 'tHoraIngreso', 'tHoraSalidaAlmuerzo', 'tHoraRetornoAlmuerzo', 'tHoraSalida'];
+  displayedColumns = ['nombreArea', 'nombreTrabajador', 'numeroDocumento', 'fechaMarcacion', 'horaIngreso', 'horaSalidaAlmuerzo', 'horaRetornoAlmuerzo', 'horaSalida'];
 
   constructor(private attendanceService:AttendanceService, private datepipe: DatePipe, private attendanceDetailDialog:MatDialog){}
 
@@ -51,14 +51,13 @@ export class AttendanceComponent implements OnInit, AfterViewInit {
         (err) => console.error(err),
         () => {
           this.attendanceDataSource.loadAttendances({
-            iPageSize : this.paginator.pageSize,
-            iPageNumber : (this.paginator.pageIndex + 1),
-            vSortColumn : this.sort.active,
-            vSortOrder : this.sort.direction,
-            //temp values for dev
-            cNumeroDocumento:'33254002',
-            dtFechaInicio:'1/11/2018', 
-            dtFechaFin:'30/12/2018'
+            tamanioPagina : this.paginator.pageSize,
+            paginaActual : (this.paginator.pageIndex + 1),
+            columnaOrden : this.sort.active,
+            tipoOrden : this.sort.direction,
+            numeroDocumento: this.filterOptions.numeroDocumento,
+            fechaInicio: this.filterOptions.fechaInicio, 
+            fechaFin: this.filterOptions.fechaFin
           });
         }
       );
@@ -73,11 +72,11 @@ export class AttendanceComponent implements OnInit, AfterViewInit {
   }
   //Helpers
   _showAreaInForm(area?: any): string | undefined {
-    return area ? area.vNombreArea : undefined;
+    return area ? area.nombreArea : undefined;
   }
   _filter(areaName : string): any[]{
     const filterValue = areaName.toLowerCase();
-    return this.areas.filter(area => area.vNombreArea.toLowerCase().indexOf(filterValue) === 0);
+    return this.areas.filter(area => area.nombreArea.toLowerCase().indexOf(filterValue) === 0);
   }
   //Events
   onPaginatorChange(){
@@ -93,24 +92,24 @@ export class AttendanceComponent implements OnInit, AfterViewInit {
     this.loadAttendancesPage();
   }
   onInitialDateChange(event: MatDatepickerInputEvent<Date>){
-    this.filterOptions.dtFechaInicio = this.datepipe.transform(event.value,'dd/MM/yyyy');
+    this.filterOptions.fechaInicio = this.datepipe.transform(event.value,'dd/MM/yyyy');
   }
   onFinalDateChange(event: MatDatepickerInputEvent<Date>){
-    this.filterOptions.dtFechaFin =  this.datepipe.transform(event.value,'dd/MM/yyyy');
+    this.filterOptions.fechaFin =  this.datepipe.transform(event.value,'dd/MM/yyyy');
   }
   onAreaSelectedChange(event: MatAutocompleteSelectedEvent){
-    this.filterOptions.vCodigoArea = event.option.value.vCodigoArea;
+    this.filterOptions.codigoArea = event.option.value.codigoArea;
   }
   //Methods
   loadAttendancesPage() {
     this.attendanceDataSource.loadAttendances({
-      iPageSize : this.paginator.pageSize,
-      iPageNumber : (this.paginator.pageIndex + 1),
-      vSortColumn : this.sort.active,
-      vSortOrder : this.sort.direction,
-      cNumeroDocumento:this.filterOptions.cNumeroDocumento,
-      dtFechaInicio:this.filterOptions.dtFechaInicio,
-      dtFechaFin:this.filterOptions.dtFechaFin
+      tamanioPagina : this.paginator.pageSize,
+      paginaActual : (this.paginator.pageIndex + 1),
+      columnaOrden : this.sort.active,
+      tipoOrden : this.sort.direction,
+      numeroDocumento: this.filterOptions.numeroDocumento,
+      fechaInicio: this.filterOptions.fechaInicio, 
+      fechaFin: this.filterOptions.fechaFin
     });
   }
 }
@@ -133,17 +132,17 @@ export class AttendanceDetailDialogComponent implements OnInit {
   }
 
   attendanceDetailDataSource : AttendanceDetailDataSource;
-  displayedColumns = ['dtFechaMarcacion', 'vTipoMarcacion', 'tHora', 'vCodigoPapeleta'];
+  displayedColumns = ['fechaMarcacion', 'tipoMarcacion', 'hora', 'codigoPapeleta'];
 
   constructor( private attendanceService:AttendanceService ,private attendanceDetailDialogRef: MatDialogRef<AttendanceDetailDialogComponent>, @Inject(MAT_DIALOG_DATA) public attendance: any) {}
 
   ngOnInit(): void {
-    this.globals.mapElements.areaPosition.latitude = +this.attendance.vLatitud;
-    this.globals.mapElements.areaPosition.longitude = +this.attendance.vLongitud;
+    this.globals.mapElements.areaPosition.latitude = +this.attendance.latitud;
+    this.globals.mapElements.areaPosition.longitude = +this.attendance.longitud;
     this.attendanceDetailDataSource = new AttendanceDetailDataSource(this.attendanceService);
     this.attendanceDetailDataSource.loadAttendanceDetail({
-      dtFechaMarcacion : this.attendance.dtFechaMarcacion,
-      cNumeroDocumento : this.attendance.cNumeroDocumento
+      fechaMarcacion : this.attendance.fechaMarcacion,
+      numeroDocumento : this.attendance.numeroDocumento
     });
   }
 

@@ -10,24 +10,24 @@
                     fxFlex="0 1 calc(33.3% - 1%)"
                     fxFlex.lt-md="0 1 calc(50% - 1%)"
                     fxFlex.lt-sm="100%">
-                    <input matInput placeholder="Documento de Identidad" [(ngModel)]="filterOptions.cNumeroDocumento">
+                    <input matInput placeholder="Documento de Identidad" [(ngModel)]="filterOptions.numeroDocumento">
                     <mat-icon matSuffix>mode_edit</mat-icon>
                 </mat-form-field>
                 <mat-form-field
                     fxFlex="0 1 calc(33.3% - 1%)"
                     fxFlex.lt-md="0 1 calc(50% - 1%)"
                     fxFlex.lt-sm="100%">
-                    <input matInput [matDatepicker]="dtFechaInicio" placeholder="Fecha de Inicio" (dateChange)="onInitialDateChange($event)">
-                    <mat-datepicker-toggle matSuffix [for]="dtFechaInicio"></mat-datepicker-toggle>
-                    <mat-datepicker #dtFechaInicio></mat-datepicker>
+                    <input matInput [matDatepicker]="fechaInicio" placeholder="Fecha de Inicio" (dateChange)="onInitialDateChange($event)">
+                    <mat-datepicker-toggle matSuffix [for]="fechaInicio"></mat-datepicker-toggle>
+                    <mat-datepicker #fechaInicio></mat-datepicker>
                 </mat-form-field>
                 <mat-form-field
                     fxFlex="0 1 calc(33.3% - 1%)"
                     fxFlex.lt-md="0 1 calc(50% - 1%)"
                     fxFlex.lt-sm="100%">
-                    <input matInput [matDatepicker]="dtFechaFin" placeholder="Fecha de Fin" (dateChange)="onFinalDateChange($event)">
-                    <mat-datepicker-toggle matSuffix [for]="dtFechaFin"></mat-datepicker-toggle>
-                    <mat-datepicker #dtFechaFin></mat-datepicker>
+                    <input matInput [matDatepicker]="fechaFin" placeholder="Fecha de Fin" (dateChange)="onFinalDateChange($event)">
+                    <mat-datepicker-toggle matSuffix [for]="fechaFin"></mat-datepicker-toggle>
+                    <mat-datepicker #fechaFin></mat-datepicker>
                 </mat-form-field>
     
                 <mat-form-field
@@ -36,7 +36,7 @@
                     fxFlex.lt-sm="100%">
                     <input matInput placeholder="Sucursal" aria-label="Sucursal" [matAutocomplete]="auto" [formControl]="areaInputFormControl">
                     <mat-autocomplete (optionSelected)="onAreaSelectedChange($event)" autoActiveFirstOption #auto="matAutocomplete" [displayWith]="_showAreaInForm">
-                        <mat-option *ngFor="let area of filteredOptions | async" [value]="area">{{area.vNombreArea}}</mat-option>
+                        <mat-option *ngFor="let area of filteredOptions | async" [value]="area">{{area.nombreArea}}</mat-option>
                     </mat-autocomplete>
                 </mat-form-field>
             </div>
@@ -55,43 +55,43 @@
             </div>
     
             <div class="table-container">
-                <mat-table [hidden]="!attendanceDataSource.loading$ | async" [dataSource]="attendanceDataSource" matSort matSortActive="vNombreArea" matSortDirection="asc" matSortDisableClear>
-                    <ng-container matColumnDef="vNombreArea">
+                <mat-table [hidden]="!attendanceDataSource.loading$ | async" [dataSource]="attendanceDataSource" matSort matSortActive="fechaMarcacion" matSortDirection="desc" matSortDisableClear>
+                    <ng-container matColumnDef="nombreArea">
                         <mat-header-cell *matHeaderCellDef mat-sort-header>Área</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.vNombreArea}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.nombreArea}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="vNombreTrabajador">
+                    <ng-container matColumnDef="nombreTrabajador">
                         <mat-header-cell *matHeaderCellDef>Trabajador</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.vNombreTrabajador}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.nombreTrabajador}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="cNumeroDocumento">
+                    <ng-container matColumnDef="numeroDocumento">
                         <mat-header-cell *matHeaderCellDef>Documento</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.cNumeroDocumento}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.numeroDocumento}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="dtFechaMarcacion">
+                    <ng-container matColumnDef="fechaMarcacion">
                         <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.dtFechaMarcacion}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.fechaMarcacion}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="tHoraIngreso">
+                    <ng-container matColumnDef="horaIngreso">
                         <mat-header-cell *matHeaderCellDef>Ingreso</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.tHoraIngreso}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.horaIngreso}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="tHoraSalidaAlmuerzo">
+                    <ng-container matColumnDef="horaSalidaAlmuerzo">
                         <mat-header-cell *matHeaderCellDef>Salida Almuerzo</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.tHoraSalidaAlmuerzo}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.horaSalidaAlmuerzo}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="tHoraRetornoAlmuerzo">
+                    <ng-container matColumnDef="horaRetornoAlmuerzo">
                         <mat-header-cell *matHeaderCellDef>Retorno Almuerzo</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.tHoraRetornoAlmuerzo}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.horaRetornoAlmuerzo}}</mat-cell>
                     </ng-container>
-                    <ng-container matColumnDef="tHoraSalida">
+                    <ng-container matColumnDef="horaSalida">
                         <mat-header-cell *matHeaderCellDef>Salida</mat-header-cell>
-                        <mat-cell *matCellDef="let attendance">{{attendance.tHoraSalida}}</mat-cell>
+                        <mat-cell *matCellDef="let attendance">{{attendance.horaSalida}}</mat-cell>
                     </ng-container>
                     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
                     <mat-row *matRowDef="let row; columns: displayedColumns" (click)="onRowClicked(row)"></mat-row>
                 </mat-table>
-                <mat-paginator [length]="attendanceDataSource.globalResponseParameters.iRecordCount" 
+                <mat-paginator [length]="attendanceDataSource.globalResponseParameters.contadorRegistros" 
                     [pageSize]="10" 
                     [pageSizeOptions]="[10, 25, 50, 100, 500]" 
                     (page)="onPaginatorChange()"
